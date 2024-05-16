@@ -1,0 +1,71 @@
+version: "3.7"
+
+services:
+  rabbit-mq:
+    image: rabbitmq:3-management
+    container_name: rabbit-mq
+    hostname: rabbit-mq
+    restart: unless-stopped
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    # environment:
+    #   RABBITMQ_DEFAULT_USER: "${RABBITMQ_USER}"
+    #   RABBITMQ_DEFAULT_PASS: "${RABBITMQ_PASS}"
+    networks:
+      - development-network
+    # command: rabbitmq-plugins enable rabbitmq_management
+
+  pgadmin4:
+    image: dpage/pgadmin4
+    container_name: pgadmin4
+    restart: unless-stopped
+    networks:
+      - database-network
+      - development-network
+    ports:
+      - 15432:80
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "${PGADMIN_DEFAULT_EMAIL}"
+      PGADMIN_DEFAULT_PASSWORD: "${PGADMIN_DEFAULT_PASSWORD}"
+
+  cloudbeaver:
+    image: dbeaver/cloudbeaver:21.3.3
+    container_name: cloudbeaver
+    restart: unless-stopped
+    ports:
+      - 8978:8978
+    networks:
+      - database-network
+      - development-network
+    volumes:
+      - "${DOCKER_HOME}/cloudbeaver/workspace:/opt/cloudbeaver/workspace"
+
+  # Caso haja problemas com max_map_count
+  # Rodar o comand "sudo sysctl -q -w vm.max_map_count=262144" na maquina host
+  sonarqube:
+    container_name: sonarqube
+    image: "sonarqube"
+    restart: unless-stopped
+    #command: "-Dsonar.login=${SONAR_USER} -Dsonar.password=${SONAR_PASSWORD} -Dnode.store.allow_mmap=false"
+    environment:
+      SONAR_JDBC_URL: "${SONAR_JDBC_URL}"
+      SONAR_JDBC_USERNAME: "${SONAR_JDBC_USERNAME}"
+      SONAR_JDBC_PASSWORD: "${SONAR_JDBC_PASSWORD}"
+    ports:
+      - "9011:9001"
+      - "9010:9000"
+      - "46737:46737"
+    volumes:
+      - "${DOCKER_HOME}/sonarqube/data:/opt/sonarqube/data"
+      - "${DOCKER_HOME}/sonarqube/logs:/opt/sonarqube/logs"
+      - "${DOCKER_HOME}/sonarqube/extensions:/opt/sonarqube/extensions"
+    networks:
+      - database-network
+      - development-network
+
+networks:
+  database-network:
+    external: true
+  development-network:
+    external: true

@@ -1,0 +1,56 @@
+version: "3.7"
+
+services:
+  sqlserver:
+    container_name: sqlserver
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    restart: unless-stopped
+    # command: 'sleep infinity'
+    ports:
+      - "1433:1433"
+    environment:
+      SA_PASSWORD: "${SA_PASSWORD}"
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: "Enterprise"
+    volumes:
+      - ${DOCKER_HOME}/mssql/data:/var/opt/mssql/data:rw
+    networks:
+      - database-network
+
+  postgres:
+    image: postgres
+    container_name: postgres
+    hostname: "postgres"
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+    volumes:
+      - ${DOCKER_HOME}/postgres:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - database-network
+
+  mysql:
+    image: docker.io/library/mariadb:10.5
+    container_name: mysql
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    expose:
+      - "3306"
+    environment:
+      MYSQL_ROOT_HOST: "%"
+      MYSQL_DATABASE: "${MYSQL_DATABASE}"
+      MYSQL_USER: "${MYSQL_USER}"
+      MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
+      MYSQL_ROOT_PASSWORD: "${MYSQL_PASSWORD}"
+    volumes:
+      - ${DOCKER_HOME}/mysql/data:/var/lib/mysql/data
+    networks:
+      - database-network
+
+networks:
+  database-network:
+    external: true

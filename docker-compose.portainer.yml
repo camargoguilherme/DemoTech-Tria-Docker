@@ -1,0 +1,21 @@
+version: "3.7"
+
+services:
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+      - "9443:9443"
+    networks:
+      - server-network
+    volumes:
+      - "/etc/localtime:/etc/localtime:ro"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "/mnt/e/Projetos/Docker-Home/portainer/portainer-data:/data"
+
+networks:
+  server-network:
+  proxy:
+    external: true
